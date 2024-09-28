@@ -2,12 +2,12 @@ package org.dimi.light;
 
 import org.dimi.Vector3;
 
-public class LightingProcessor {
+public class LightProcessor {
     private double intensity;
     private final Vector3 point;
     private final Vector3 normal;
 
-    public LightingProcessor(Vector3 point, Vector3 normal) {
+    public LightProcessor(Vector3 point, Vector3 normal) {
         this.intensity = 0;
         this.point = point;
         this.normal = normal;

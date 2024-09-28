@@ -17,8 +17,8 @@ public class PointLight implements Light {
     }
 
     @Override
-    public void accept(LightingProcessor lightingProcessor) {
-        lightingProcessor.visit(this);
+    public void accept(LightProcessor lightProcessor) {
+        lightProcessor.visit(this);
     }
 
     public Vector3 getPosition() {

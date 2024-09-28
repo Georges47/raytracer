@@ -243,10 +243,10 @@ public class Main {
 
     // Lighting
     private static double computeLighting(Vector3 point, Vector3 normal) {
-        LightingProcessor lightingProcessor = new LightingProcessor(point, normal);
+        LightProcessor lightProcessor = new LightProcessor(point, normal);
         for (Light light : scene.getLights()) {
-            light.accept(lightingProcessor);
+            light.accept(lightProcessor);
         }
-        return lightingProcessor.getIntensity();
+        return lightProcessor.getIntensity();
     }
 }
