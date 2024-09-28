@@ -1,11 +1,13 @@
 package org.dimi;
 
+import java.awt.*;
+
 public class Sphere {
     private final Vector3 center;
     private final double radius;
-    private final int color;
+    private final Color color;
 
-    public Sphere(Vector3 center, double radius, int color) {
+    public Sphere(Vector3 center, double radius, Color color) {
         this.center = center;
         this.radius = radius;
         this.color = color;
@@ -19,7 +21,7 @@ public class Sphere {
         return radius;
     }
 
-    public int getColor() {
+    public Color getColor() {
         return color;
     }
 

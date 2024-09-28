@@ -1,5 +1,7 @@
 package org.dimi;
 
+import org.dimi.light.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,11 +16,19 @@ public class Main {
     public static final Vector3 CAMERA_POSITION = Vector3.origin;
     public static final int CAMERA_TO_VIEWPORT_DISTANCE = 1;
 
-    public static Sphere[] SPHERES = new Sphere[]{
-            new Sphere(new Vector3(0, -1, 3), 1, Color.RED.getRGB()),
-            new Sphere(new Vector3(2, 0, 4), 1, Color.GREEN.getRGB()),
-            new Sphere(new Vector3(-2, 0, 4), 1, Color.BLUE.getRGB()),
-    };
+    public static Scene scene = new Scene(
+        new Sphere[]{
+            new Sphere(new Vector3(0, -1, 3), 1, Color.RED),
+            new Sphere(new Vector3(2, 0, 4), 1, Color.GREEN),
+            new Sphere(new Vector3(-2, 0, 4), 1, Color.BLUE),
+            new Sphere(new Vector3(0, -5001, 0), 5000, Color.YELLOW),
+        },
+        new Light[]{
+            new AmbientLight(0.2f),
+            new PointLight(0.6f, new Vector3(2, 1, 0)),
+            new DirectionalLight(0.2f, new Vector3(1, 4, 4))
+        }
+    );
     public static int BACKGROUND_COLOR = Color.BLACK.getRGB();
 
     public static void main(String[] args) {
@@ -26,7 +36,7 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        BufferedImage image = new BufferedImage(CANVAS_WIDTH, CANVAS_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(CANVAS_WIDTH, CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
 
         renderSpheres(image);
 
@@ -42,39 +52,39 @@ public class Main {
         JLabel redSphereLabel = new JLabel("RED    ");
         redSphereSection.add(redSphereLabel);
         JTextField redSphereXField = new JTextField(3);
-        redSphereXField.setText(String.valueOf(SPHERES[0].getCenter().getX()));
+        redSphereXField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getX()));
         redSphereSection.add(redSphereXField);
         JTextField redSphereYField = new JTextField(3);
-        redSphereYField.setText(String.valueOf(SPHERES[0].getCenter().getY()));
+        redSphereYField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getY()));
         redSphereSection.add(redSphereYField);
         JTextField redSphereZField = new JTextField(3);
-        redSphereZField.setText(String.valueOf(SPHERES[0].getCenter().getZ()));
+        redSphereZField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getZ()));
         redSphereSection.add(redSphereZField);
 
         JPanel greenSphereSection = new JPanel();
         JLabel greenSphereLabel = new JLabel("GREEN ");
         greenSphereSection.add(greenSphereLabel);
         JTextField greenSphereXField = new JTextField(3);
-        greenSphereXField.setText(String.valueOf(SPHERES[1].getCenter().getX()));
+        greenSphereXField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getX()));
         greenSphereSection.add(greenSphereXField);
         JTextField greenSphereYField = new JTextField(3);
-        greenSphereYField.setText(String.valueOf(SPHERES[1].getCenter().getY()));
+        greenSphereYField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getY()));
         greenSphereSection.add(greenSphereYField);
         JTextField greenSphereZField = new JTextField(3);
-        greenSphereZField.setText(String.valueOf(SPHERES[1].getCenter().getZ()));
+        greenSphereZField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getZ()));
         greenSphereSection.add(greenSphereZField);
 
         JPanel blueSphereSection = new JPanel();
         JLabel blueSphereLabel = new JLabel("BLUE  ");
         blueSphereSection.add(blueSphereLabel);
         JTextField blueSphereXField = new JTextField(3);
-        blueSphereXField.setText(String.valueOf(SPHERES[2].getCenter().getX()));
+        blueSphereXField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getX()));
         blueSphereSection.add(blueSphereXField);
         JTextField blueSphereYField = new JTextField(3);
-        blueSphereYField.setText(String.valueOf(SPHERES[2].getCenter().getY()));
+        blueSphereYField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getY()));
         blueSphereSection.add(blueSphereYField);
         JTextField blueSphereZField = new JTextField(3);
-        blueSphereZField.setText(String.valueOf(SPHERES[2].getCenter().getZ()));
+        blueSphereZField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getZ()));
         blueSphereSection.add(blueSphereZField);
 
         JPanel actionsSection = new JPanel();
@@ -88,11 +98,11 @@ public class Main {
 
             if (redSphereXString.isEmpty() || redSphereYString.isEmpty() || redSphereZString.isEmpty()) return;
 
-            double redSphereX = Double.parseDouble(redSphereXString);
-            double redSphereY = Double.parseDouble(redSphereYString);
-            double redSphereZ = Double.parseDouble(redSphereZString);
+            double redSphereX = Float.parseFloat(redSphereXString);
+            double redSphereY = Float.parseFloat(redSphereYString);
+            double redSphereZ = Float.parseFloat(redSphereZString);
 
-            SPHERES[0] = new Sphere(new Vector3(redSphereX, redSphereY, redSphereZ), 1, Color.RED.getRGB());
+            scene.updateSphere(0, new Sphere(new Vector3(redSphereX, redSphereY, redSphereZ), 1, Color.RED));
 
             redSphereXField.setText(redSphereXString);
             redSphereYField.setText(redSphereYString);
@@ -104,11 +114,11 @@ public class Main {
 
             if (greenSphereXString.isEmpty() || greenSphereYString.isEmpty() || greenSphereZString.isEmpty()) return;
 
-            double greenSphereX = Double.parseDouble(greenSphereXString);
-            double greenSphereY = Double.parseDouble(greenSphereYString);
-            double greenSphereZ = Double.parseDouble(greenSphereZString);
+            double greenSphereX = Float.parseFloat(greenSphereXString);
+            double greenSphereY = Float.parseFloat(greenSphereYString);
+            double greenSphereZ = Float.parseFloat(greenSphereZString);
 
-            SPHERES[1] = new Sphere(new Vector3(greenSphereX, greenSphereY, greenSphereZ), 1, Color.GREEN.getRGB());
+            scene.updateSphere(1, new Sphere(new Vector3(greenSphereX, greenSphereY, greenSphereZ), 1, Color.GREEN));
 
             greenSphereXField.setText(greenSphereXString);
             greenSphereYField.setText(greenSphereYString);
@@ -121,11 +131,11 @@ public class Main {
 
             if (blueSphereXString.isEmpty() || blueSphereYString.isEmpty() || blueSphereZString.isEmpty()) return;
 
-            double blueSphereX = Double.parseDouble(blueSphereXString);
-            double blueSphereY = Double.parseDouble(blueSphereYString);
-            double blueSphereZ = Double.parseDouble(blueSphereZString);
+            double blueSphereX = Float.parseFloat(blueSphereXString);
+            double blueSphereY = Float.parseFloat(blueSphereYString);
+            double blueSphereZ = Float.parseFloat(blueSphereZString);
 
-            SPHERES[2] = new Sphere(new Vector3(blueSphereX, blueSphereY, blueSphereZ), 1, Color.BLUE.getRGB());
+            scene.updateSphere(2, new Sphere(new Vector3(blueSphereX, blueSphereY, blueSphereZ), 1, Color.BLUE));
 
             blueSphereXField.setText(blueSphereXString);
             blueSphereYField.setText(blueSphereYString);
@@ -181,7 +191,7 @@ public class Main {
     private static int traceRay(Vector3 rayOrigin, Vector3 rayDirection, int tMin, int tMax) {
         double closestT = Integer.MAX_VALUE;
         Sphere closestSphere = null;
-        for (Sphere sphere : SPHERES) {
+        for (Sphere sphere : scene.getSpheres()) {
             double[] ts = intersectRaySphere(rayOrigin, rayDirection, sphere);
             if (ts[0] >= tMin && ts[0] <= tMax && ts[0] < closestT) {
                 closestT = ts[0];
@@ -192,7 +202,15 @@ public class Main {
                 closestSphere = sphere;
             }
         }
-        return closestSphere == null ? BACKGROUND_COLOR : closestSphere.getColor();
+        if (closestSphere == null) return BACKGROUND_COLOR;
+        Vector3 point = CAMERA_POSITION.add(rayDirection.scale(closestT));
+        Vector3 normal = point.subtract(closestSphere.getCenter()).normalize();
+
+        double intensity = computeLighting(point, normal);
+        int red = closestSphere.getColor().getRed();
+        int green = closestSphere.getColor().getGreen();
+        int blue = closestSphere.getColor().getBlue();
+        return new Color((float) (red * intensity/255), (float) (green * intensity/255), (float) (blue * intensity/255)).getRGB();
     }
 
     private static double[] intersectRaySphere(Vector3 rayOrigin, Vector3 rayDirection, Sphere sphere) {
@@ -208,8 +226,8 @@ public class Main {
             return new double[]{Integer.MAX_VALUE, Integer.MAX_VALUE};
         }
 
-        int t1 = (int) ((-b + Math.sqrt(discriminant)) / (2 * a));
-        int t2 = (int) ((-b - Math.sqrt(discriminant)) / (2 * a));
+        double t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+        double t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
 
         return new double[]{t1, t2};
     }
@@ -221,5 +239,14 @@ public class Main {
 
     private static int screenY(int canvasY) {
         return CANVAS_HEIGHT / 2 - canvasY - 1; // TODO. Que hago con ese -1 ?
+    }
+
+    // Lighting
+    private static double computeLighting(Vector3 point, Vector3 normal) {
+        LightingProcessor lightingProcessor = new LightingProcessor(point, normal);
+        for (Light light : scene.getLights()) {
+            light.accept(lightingProcessor);
+        }
+        return lightingProcessor.getIntensity();
     }
 }
