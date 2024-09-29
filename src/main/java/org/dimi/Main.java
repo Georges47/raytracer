@@ -7,16 +7,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Main {
-    public static final int CANVAS_WIDTH = 900;
-    public static final int CANVAS_HEIGHT = 900;
-
-    public static final int VIEWPORT_WIDTH = 1;
-    public static final int VIEWPORT_HEIGHT = 1;
-
-    public static final Vector3 CAMERA_POSITION = Vector3.origin;
-    public static final int CAMERA_TO_VIEWPORT_DISTANCE = 1;
-
     public static Scene scene = new Scene(
+        new Camera(
+            new Vector3(3, 0, 1),
+            new float[][]{
+                {0.7071f, 0f, -0.7071f},
+                {0f, 1f, 0f},
+                {0.7071f, 0f, 0.7071f}
+            }
+        ),
         new Sphere[]{
             new Sphere(new Vector3(0, -1, 3), 1, Color.RED),
             new Sphere(new Vector3(2, 0, 4), 1, Color.GREEN),
@@ -31,16 +30,43 @@ public class Main {
     );
     public static int BACKGROUND_COLOR = Color.BLACK.getRGB();
 
+    private static BufferedImage image;
+    private static JPanel jPanel;
+
+    private static final MathProcessor mathProcessor = new MathProcessor();
+
+    private static JPanel objectSection(String label, int objectIndex) {
+        JTextField xField = new JTextField(3);
+        JTextField yField = new JTextField(3);
+        JTextField zField = new JTextField(3);
+
+        Vector3 center = scene.getSpheres()[objectIndex].getCenter();
+        xField.setText(String.valueOf(center.getX()));
+        yField.setText(String.valueOf(center.getY()));
+        zField.setText(String.valueOf(center.getZ()));
+
+        xField.getDocument().addDocumentListener(new AxisDocumentListener(Axis.X, xField, objectIndex, scene, jPanel));
+        yField.getDocument().addDocumentListener(new AxisDocumentListener(Axis.Y, yField, objectIndex, scene, jPanel));
+        zField.getDocument().addDocumentListener(new AxisDocumentListener(Axis.Z, zField, objectIndex, scene, jPanel));
+
+        JPanel section = new JPanel();
+        section.add(new JLabel(label));
+        section.add(xField);
+        section.add(yField);
+        section.add(zField);
+        return section;
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+        frame.setSize(scene.getCanvasWidth(), scene.getCanvasHeight());
 
-        BufferedImage image = new BufferedImage(CANVAS_WIDTH, CANVAS_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(scene.getCanvasWidth(), scene.getCanvasHeight(), BufferedImage.TYPE_INT_ARGB);
 
-        renderSpheres(image);
+        renderSpheres();
 
-        JPanel renderPanel = new JPanel() {
+        jPanel = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -48,127 +74,25 @@ public class Main {
             }
         };
 
-        JPanel redSphereSection = new JPanel();
-        JLabel redSphereLabel = new JLabel("RED    ");
-        redSphereSection.add(redSphereLabel);
-        JTextField redSphereXField = new JTextField(3);
-        redSphereXField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getX()));
-        redSphereSection.add(redSphereXField);
-        JTextField redSphereYField = new JTextField(3);
-        redSphereYField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getY()));
-        redSphereSection.add(redSphereYField);
-        JTextField redSphereZField = new JTextField(3);
-        redSphereZField.setText(String.valueOf(scene.getSpheres()[0].getCenter().getZ()));
-        redSphereSection.add(redSphereZField);
-
-        JPanel greenSphereSection = new JPanel();
-        JLabel greenSphereLabel = new JLabel("GREEN ");
-        greenSphereSection.add(greenSphereLabel);
-        JTextField greenSphereXField = new JTextField(3);
-        greenSphereXField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getX()));
-        greenSphereSection.add(greenSphereXField);
-        JTextField greenSphereYField = new JTextField(3);
-        greenSphereYField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getY()));
-        greenSphereSection.add(greenSphereYField);
-        JTextField greenSphereZField = new JTextField(3);
-        greenSphereZField.setText(String.valueOf(scene.getSpheres()[1].getCenter().getZ()));
-        greenSphereSection.add(greenSphereZField);
-
-        JPanel blueSphereSection = new JPanel();
-        JLabel blueSphereLabel = new JLabel("BLUE  ");
-        blueSphereSection.add(blueSphereLabel);
-        JTextField blueSphereXField = new JTextField(3);
-        blueSphereXField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getX()));
-        blueSphereSection.add(blueSphereXField);
-        JTextField blueSphereYField = new JTextField(3);
-        blueSphereYField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getY()));
-        blueSphereSection.add(blueSphereYField);
-        JTextField blueSphereZField = new JTextField(3);
-        blueSphereZField.setText(String.valueOf(scene.getSpheres()[2].getCenter().getZ()));
-        blueSphereSection.add(blueSphereZField);
-
-        JPanel actionsSection = new JPanel();
-        JButton quitButton = new JButton("Quit");
-        JButton updateButton = new JButton("Update");
-
-        updateButton.addActionListener(e -> {
-            String redSphereXString = redSphereXField.getText();
-            String redSphereYString = redSphereYField.getText();
-            String redSphereZString = redSphereZField.getText();
-
-            if (redSphereXString.isEmpty() || redSphereYString.isEmpty() || redSphereZString.isEmpty()) return;
-
-            double redSphereX = Float.parseFloat(redSphereXString);
-            double redSphereY = Float.parseFloat(redSphereYString);
-            double redSphereZ = Float.parseFloat(redSphereZString);
-
-            scene.updateSphere(0, new Sphere(new Vector3(redSphereX, redSphereY, redSphereZ), 1, Color.RED));
-
-            redSphereXField.setText(redSphereXString);
-            redSphereYField.setText(redSphereYString);
-            redSphereZField.setText(redSphereZString);
-
-            String greenSphereXString = greenSphereXField.getText();
-            String greenSphereYString = greenSphereYField.getText();
-            String greenSphereZString = greenSphereZField.getText();
-
-            if (greenSphereXString.isEmpty() || greenSphereYString.isEmpty() || greenSphereZString.isEmpty()) return;
-
-            double greenSphereX = Float.parseFloat(greenSphereXString);
-            double greenSphereY = Float.parseFloat(greenSphereYString);
-            double greenSphereZ = Float.parseFloat(greenSphereZString);
-
-            scene.updateSphere(1, new Sphere(new Vector3(greenSphereX, greenSphereY, greenSphereZ), 1, Color.GREEN));
-
-            greenSphereXField.setText(greenSphereXString);
-            greenSphereYField.setText(greenSphereYString);
-            greenSphereZField.setText(greenSphereZString);
-
-
-            String blueSphereXString = blueSphereXField.getText();
-            String blueSphereYString = blueSphereYField.getText();
-            String blueSphereZString = blueSphereZField.getText();
-
-            if (blueSphereXString.isEmpty() || blueSphereYString.isEmpty() || blueSphereZString.isEmpty()) return;
-
-            double blueSphereX = Float.parseFloat(blueSphereXString);
-            double blueSphereY = Float.parseFloat(blueSphereYString);
-            double blueSphereZ = Float.parseFloat(blueSphereZString);
-
-            scene.updateSphere(2, new Sphere(new Vector3(blueSphereX, blueSphereY, blueSphereZ), 1, Color.BLUE));
-
-            blueSphereXField.setText(blueSphereXString);
-            blueSphereYField.setText(blueSphereYString);
-            blueSphereZField.setText(blueSphereZString);
-
-            renderSpheres(image);
-            renderPanel.repaint();
-
-        });
-
-        quitButton.addActionListener(e -> {
-            System.exit(0);
-        });
-
-        actionsSection.add(quitButton);
-        actionsSection.add(updateButton);
+        JPanel redSphereSection = objectSection("RED    ", 0);
+        JPanel greenSphereSection = objectSection("GREEN ", 1);
+        JPanel blueSphereSection = objectSection("BLUE  ", 2);
 
         JPanel controlPanel = new JPanel(new GridLayout(4,1));
         controlPanel.add(redSphereSection);
         controlPanel.add(greenSphereSection);
         controlPanel.add(blueSphereSection);
-        controlPanel.add(actionsSection);
 
-        frame.add(renderPanel, BorderLayout.CENTER);
+        frame.add(jPanel, BorderLayout.CENTER);
         frame.add(controlPanel, BorderLayout.SOUTH);
         frame.setVisible(true);
     }
 
-    private static void renderSpheres(BufferedImage image) {
-        for (int y = -CANVAS_HEIGHT / 2; y < CANVAS_HEIGHT / 2; y++) {
-            for (int x = -CANVAS_WIDTH / 2; x < CANVAS_WIDTH / 2; x++) {
-                Vector3 direction = canvasToViewport(x, y);
-                int color = traceRay(CAMERA_POSITION, direction, 1, Integer.MAX_VALUE);
+    static void renderSpheres() {
+        for (int y = -scene.getCanvasHeight() / 2; y < scene.getCanvasHeight() / 2; y++) {
+            for (int x = -scene.getCanvasWidth() / 2; x < scene.getCanvasWidth() / 2; x++) {
+                Vector3 direction = mathProcessor.matrixVectorMultiplication(scene.getCamera().getRotation(), canvasToViewport(x, y));
+                int color = traceRay(scene.getCamera().getPosition(), direction, 1, Integer.MAX_VALUE);
                 image.setRGB(screenX(x), screenY(y), color);
             }
         }
@@ -176,15 +100,15 @@ public class Main {
 
     //
     private static Vector3 canvasToViewport(int canvasX, int canvasY) {
-        return new Vector3(viewportX(canvasX), viewportY(canvasY), CAMERA_TO_VIEWPORT_DISTANCE);
+        return new Vector3(viewportX(canvasX), viewportY(canvasY), scene.getCameraToViewportDistance());
     }
 
     private static double viewportX(int canvasX) {
-        return (double) (canvasX * VIEWPORT_WIDTH) / CANVAS_WIDTH;
+        return (double) (canvasX * scene.getViewportWidth()) / scene.getCanvasWidth();
     }
 
     private static double viewportY(int canvasY) {
-        return (double) (canvasY * VIEWPORT_HEIGHT) / CANVAS_HEIGHT;
+        return (double) (canvasY * scene.getViewportHeight()) / scene.getCanvasHeight();
     }
 
     //
@@ -203,7 +127,7 @@ public class Main {
             }
         }
         if (closestSphere == null) return BACKGROUND_COLOR;
-        Vector3 point = CAMERA_POSITION.add(rayDirection.scale(closestT));
+        Vector3 point = scene.getCamera().getPosition().add(rayDirection.scale(closestT));
         Vector3 normal = point.subtract(closestSphere.getCenter()).normalize();
 
         double intensity = computeLighting(point, normal);
@@ -234,11 +158,11 @@ public class Main {
 
     //
     private static int screenX(int canvasX) {
-        return CANVAS_WIDTH / 2 + canvasX;
+        return scene.getCanvasWidth() / 2 + canvasX;
     }
 
     private static int screenY(int canvasY) {
-        return CANVAS_HEIGHT / 2 - canvasY - 1; // TODO. Que hago con ese -1 ?
+        return scene.getCanvasHeight() / 2 - canvasY - 1; // TODO. Que hago con ese -1 ?
     }
 
     // Lighting

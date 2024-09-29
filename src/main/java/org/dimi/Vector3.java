@@ -5,8 +5,6 @@ public class Vector3 {
     private final double y;
     private final double z;
 
-    public static Vector3 origin = new Vector3(0, 0, 0);
-
     public Vector3(double x, double y, double z) {
         this.x = x;
         this.y = y;
